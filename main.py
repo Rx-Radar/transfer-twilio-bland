@@ -90,7 +90,6 @@ def main(request):
     }
 
     response = requests.request("POST", url, json=payload, headers=headers)
-    print(response.text)
     twiml = f"""
             <Response>
                 <Dial>
