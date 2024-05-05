@@ -19,15 +19,6 @@ def main(request):
     prescription_brand = request.args.get('brand')
     prescription_quantity = request.args.get('quantity')
     prescription_type = request.args.get('type')
-    
-    
-    print("call_uuid:", call_uuid)
-    print("prescription_name:", prescription_name)
-    print("prescription_dosage:", prescription_dosage)
-    print("prescription_brand:", prescription_brand)
-    print("prescription_quantity:", prescription_quantity)
-    print("prescription_type:", prescription_type)
-
 
     # Step 1. update the prompt
     prompt = f"""
@@ -86,7 +77,7 @@ def main(request):
         "prompt": prompt,
         "voice": random.choice(voice_list),
         "record":"true",
-        "webhook": "https://us-central1-rxradar.cloudfunctions.net/test-callback",
+        "webhook": "https://us-central1-rxradar.cloudfunctions.net/call-completion-twilio-bland",
         "metadata": {
             "request_uuid": request_uuid,
             "call_uuid": call_uuid
