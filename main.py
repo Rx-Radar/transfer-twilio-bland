@@ -3,11 +3,28 @@ import functions_framework
 import requests
 from twilio.rest import Client
 import random
+import yaml
+import os
 
+def load_yaml_file(filepath):
+    with open(filepath, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
 
-TWILIO_SID="AC3d433258fe9b280b01ba83afe272f438"
-TWILIO_AUTH="2cc106ae7b360c99a7be11cc4ea77c07"
-twilio_client = Client(TWILIO_SID,TWILIO_AUTH)
+# Use the function to load the configuration
+config = load_yaml_file('config.yaml')
+
+env = os.getenv("deployment_env")
+
+TWILIO_ACCOUNT_SID = config[env]["twilio"]["account_sid"] 
+TWILIO_AUTH_TOKEN = config[env]["twilio"]["auth_token"] 
+
+BLAND_PHONE_NUMBER = config[env]["bland"]["phone_number"]
+BLAND_API_KEY = config[env]["bland"]["api_key"]
+
+CF_CALL_COMPLETION = config[env]["cloud_functions"]["call_completion"]
+
+twilio_client = Client(TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN)
 
 
 @functions_framework.http
@@ -73,11 +90,11 @@ def main(request):
     url = "https://api.bland.ai/inbound/update"
 
     payload = {
-        "phone_number": "+14159428647",
+        "phone_number": BLAND_PHONE_NUMBER,
         "prompt": prompt,
         "voice": random.choice(voice_list),
         "record":"true",
-        "webhook": "https://us-central1-rxradar.cloudfunctions.net/call-completion-twilio-bland",
+        "webhook": CF_CALL_COMPLETION,
         "metadata": {
             "request_uuid": request_uuid,
             "call_uuid": call_uuid
@@ -85,7 +102,7 @@ def main(request):
         "wait_for_greeting": "false"
     }
     headers = {
-    'Authorization': 'sk-a8nctbcb5u3ko6jjwjlvs918uls8z3t2mp3ld6b004iqzcn51y7k7a1xj5rd12sf69',
+    'Authorization': BLAND_API_KEY,
         "Content-Type": "application/json"
     }
 
@@ -93,7 +110,7 @@ def main(request):
     twiml = f"""
             <Response>
                 <Dial>
-                    <Number>+14159428647</Number>
+                    <Number>{BLAND_PHONE_NUMBER}</Number>
                 </Dial>
             </Response>
     """
