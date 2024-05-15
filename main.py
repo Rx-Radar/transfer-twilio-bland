@@ -1,6 +1,7 @@
 #In push-to-bland
 import functions_framework
 import requests
+from firebase_admin import credentials, firestore, initialize_app
 from twilio.rest import Client
 import random
 import yaml
@@ -19,12 +20,19 @@ env = os.getenv("deployment_env")
 TWILIO_ACCOUNT_SID = config[env]["twilio"]["account_sid"] 
 TWILIO_AUTH_TOKEN = config[env]["twilio"]["auth_token"] 
 
+FIREBASE_SEARCH_REQUESTS_DB = config[env]["firebase"]["search_requests_db"]
+
 BLAND_PHONE_NUMBER = config[env]["bland"]["phone_number"]
 BLAND_API_KEY = config[env]["bland"]["api_key"]
 
 CF_CALL_COMPLETION = config[env]["cloud_functions"]["call_completion"]
 
 twilio_client = Client(TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN)
+
+# Initialize Firebase Admin SDK with the service account key
+cred = credentials.Certificate("firebase_creds.json")  # Update with your service account key file 
+initialize_app(cred)
+db = firestore.client() # set firestore client
 
 
 @functions_framework.http
@@ -114,4 +122,9 @@ def main(request):
                 </Dial>
             </Response>
     """
+    
+    
+    search_ref = db.collection(FIREBASE_SEARCH_REQUESTS_DB).document(request_uuid)
+    search_ref.document(request_uuid).update({"unfinished_calls" : firestore.Increment(1)})
+
     return twiml
