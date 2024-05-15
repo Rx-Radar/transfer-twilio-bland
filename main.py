@@ -125,6 +125,6 @@ def main(request):
     
     
     search_ref = db.collection(FIREBASE_SEARCH_REQUESTS_DB).document(request_uuid)
-    search_ref.document(request_uuid).update({"unfinished_calls" : firestore.Increment(1)})
+    search_ref.update({"unfinished_calls" : firestore.Increment(1)})
 
     return twiml
